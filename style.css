@@ -459,6 +459,40 @@ input:focus {
   padding: 0.2rem 0;
 }
 
+.acted-label {
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  color: #58d68d;
+  padding: 0.2rem 0;
+  font-weight: 500;
+}
+
+.player-acted {
+  border-color: rgba(46, 204, 113, 0.35);
+}
+
+.player-acted::before {
+  opacity: 0 !important;
+}
+
+.btn-undo {
+  flex: 1;
+  border-radius: 6px;
+  padding: 0.38rem 0.2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  cursor: pointer;
+  border: 1px solid rgba(150, 150, 150, 0.3);
+  background: rgba(150, 150, 150, 0.1);
+  color: var(--text-dim);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.btn-undo:active {
+  opacity: 0.75;
+}
+
 .min-bet-hint {
   font-size: 0.58rem;
   color: var(--text-dim);
@@ -508,6 +542,24 @@ input:focus {
 
 .btn-next-round:active {
   opacity: 0.85;
+}
+
+.round-status {
+  font-size: 0.68rem;
+  text-align: right;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  max-width: 130px;
+  line-height: 1.5;
+}
+
+.round-status .status-waiting {
+  color: var(--gold-dim);
+}
+
+.round-status .status-done {
+  color: #58d68d;
+  font-weight: 500;
 }
 
 /* ── MODALS ─────────────────────────────────── */

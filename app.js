@@ -9,6 +9,7 @@ let state = {
   currentStage: 0,
   minBet: 100,
   highestBet: 0,
+  raiserIndex: null,   // index of the player who last raised (null = no raise yet)
   selectedWinner: null,
 };
 
@@ -40,7 +41,6 @@ function updateNameInputs() {
 }
 
 function startSession() {
-  const n = parseInt(document.getElementById('num-players').value);
   const cash = parseInt(document.getElementById('starting-cash').value);
   const minBet = parseInt(document.getElementById('min-bet').value) || 100;
   const names = [...document.querySelectorAll('.player-name-input')]
@@ -53,17 +53,66 @@ function startSession() {
     pendingBet: 0,
     folded: false,
     allIn: false,
+    acted: false,    // has this player acted this betting round?
+    hasRaised: false, // has this player raised this betting round?
   }));
 
   state.pot = 0;
   state.currentStage = 0;
   state.minBet = minBet;
   state.highestBet = 0;
+  state.raiserIndex = null;
   state.selectedWinner = null;
 
   document.getElementById('setup-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
   renderGame();
+}
+
+// ── ROUND COMPLETE CHECK ──────────────────────
+// Round is done when every active (non-folded, non-allIn) player has acted
+// AND all active players have the same currentBet (or are all-in)
+function checkRoundComplete() {
+  const active = state.players.filter(p => !p.folded);
+
+  // If only one player left, that's handled by doFold
+  if (active.length <= 1) return;
+
+  // Everyone who can still act must have acted
+  const canAct = active.filter(p => !p.allIn);
+  const allActed = canAct.every(p => p.acted);
+  if (!allActed) return;
+
+  // All active players must be at the same bet level (or all-in)
+  const maxBet = Math.max(...active.map(p => p.currentBet));
+  const allEqual = canAct.every(p => p.currentBet === maxBet);
+  if (!allEqual) return;
+
+  // Round is complete — advance stage
+  advanceStage();
+}
+
+function advanceStage() {
+  if (state.currentStage >= 4) return;
+
+  // Reset per-round state
+  state.players.forEach(p => {
+    p.currentBet = 0;
+    p.pendingBet = 0;
+    p.acted = false;
+    p.hasRaised = false;
+  });
+  state.highestBet = 0;
+  state.raiserIndex = null;
+  state.currentStage++;
+
+  if (state.currentStage === 4) {
+    // Auto-open showdown
+    renderGame();
+    openWinnerModal();
+  } else {
+    renderGame();
+  }
 }
 
 // ── RENDER ───────────────────────────────────
@@ -78,37 +127,66 @@ function renderGame() {
   document.getElementById('pot-value').textContent = state.pot.toLocaleString();
   document.getElementById('round-title').textContent = STAGE_DESC[state.currentStage];
 
-  const btn = document.getElementById('next-stage-btn');
-  if (state.currentStage === 4) {
-    btn.textContent = '🏆 Award Pot';
-    btn.onclick = openWinnerModal;
-  } else {
-    btn.textContent = 'Next Stage →';
-    btn.onclick = nextStage;
-  }
-
+  renderStatus();
   renderPlayers();
+}
+
+function renderStatus() {
+  const statusEl = document.getElementById('round-status');
+  if (state.currentStage === 4) { statusEl.innerHTML = ''; return; }
+
+  const active = state.players.filter(p => !p.folded && !p.allIn);
+  const waiting = active.filter(p => !p.acted);
+  const done = active.filter(p => p.acted);
+
+  if (waiting.length === 0) {
+    statusEl.innerHTML = `<span class="status-done">✓ All done</span>`;
+  } else {
+    statusEl.innerHTML = `<span class="status-waiting">${waiting.length} player${waiting.length > 1 ? 's' : ''} to act</span>`;
+  }
 }
 
 function renderPlayers() {
   const grid = document.getElementById('players-grid');
   grid.innerHTML = '';
+  const isShowdown = state.currentStage === 4;
 
   state.players.forEach((p, i) => {
     const card = document.createElement('div');
-    card.className = 'player-card' + (p.folded ? ' folded' : '');
-
     const betDiff = state.highestBet - p.currentBet;
-    const canCheck = betDiff === 0;
+    const canCheck = betDiff === 0 && !p.allIn;
     const canMatch = betDiff > 0 && betDiff <= p.stack;
-    const isShowdown = state.currentStage === 4;
+    // Can only raise if: no one has raised yet, OR this player hasn't raised yet this round
+    // (raiserIndex tracks who last raised; a player can't raise again after the raiser acts)
+    const canRaise = !p.hasRaised && (state.raiserIndex === null || state.raiserIndex !== i);
+
+    let statusLabel = '';
+    if (p.folded) {
+      statusLabel = 'folded';
+    } else if (p.allIn) {
+      statusLabel = 'allin';
+    } else if (p.acted) {
+      statusLabel = 'acted';
+    }
+
+    card.className = 'player-card' + (p.folded ? ' folded' : '') + (p.acted && !p.folded && !p.allIn ? ' player-acted' : '');
 
     let actionsHTML = '';
     if (p.folded) {
       actionsHTML = `<div class="player-actions"><div class="folded-label">✗ Folded</div></div>`;
+    } else if (p.allIn) {
+      actionsHTML = `<div class="player-actions"><div class="folded-label" style="color:#e67e22">ALL IN</div></div>`;
+    } else if (p.acted && !isShowdown) {
+      // Show a "acted" state — they can still change their mind if no one has re-raised
+      // but we keep it simple: show a "✓ Acted" with an undo option
+      actionsHTML = `
+        <div class="player-actions">
+          <div class="acted-label">✓ ${p.currentBet > 0 ? `Bet £${p.currentBet.toLocaleString()}` : 'Checked'}</div>
+          <div class="action-row">
+            <button class="btn-undo" onclick="undoAction(${i})">Undo</button>
+          </div>
+        </div>`;
     } else if (!isShowdown) {
-      const mustMatchAbove = betDiff > 0;
-      const matchNeeded = mustMatchAbove ? betDiff : 0;
       actionsHTML = `
         <div class="player-actions">
           <div class="bet-row">
@@ -121,7 +199,7 @@ function renderPlayers() {
           <div class="action-row">
             ${canCheck ? `<button class="btn-check" onclick="doCheck(${i})">Check</button>` : ''}
             ${canMatch ? `<button class="btn-match" onclick="doMatch(${i})">Match £${betDiff.toLocaleString()}</button>` : ''}
-            <button class="btn-bet" onclick="doBet(${i})">Bet/Raise</button>
+            ${canRaise ? `<button class="btn-bet" onclick="doBet(${i})">Bet/Raise</button>` : ''}
             <button class="btn-allin" onclick="doAllIn(${i})">All-In</button>
             <button class="btn-fold" onclick="doFold(${i})">Fold</button>
           </div>
@@ -160,23 +238,48 @@ function doBet(i) {
     alert('Set an amount first!');
     return;
   }
-  // Must bet at least minBet above the current highest bet (or at least minBet total if no bets yet)
   const totalBet = p.currentBet + p.pendingBet;
-  const minRequired = Math.max(state.minBet, state.highestBet + state.minBet);
-  if (totalBet < minRequired && totalBet < p.stack + p.currentBet) {
-    alert(`Minimum bet is £${state.minBet.toLocaleString()}. You need to bet at least £${(minRequired - p.currentBet).toLocaleString()} more.`);
+  // Must reach at least minBet total, or minBet above the current high
+  const minRequired = state.highestBet > 0
+    ? state.highestBet + state.minBet
+    : state.minBet;
+
+  if (totalBet < minRequired) {
+    alert(`Minimum raise is £${state.minBet.toLocaleString()}. You need a total bet of at least £${minRequired.toLocaleString()}.`);
     return;
   }
+
   state.pot += p.pendingBet;
   p.stack -= p.pendingBet;
   p.currentBet = totalBet;
   if (totalBet > state.highestBet) state.highestBet = totalBet;
   p.pendingBet = 0;
+  p.acted = true;
+  p.hasRaised = true;
+  state.raiserIndex = i;
+
+  // Everyone else who already acted but hasn't matched the new raise
+  // needs to act again (except the raiser themselves)
+  state.players.forEach((other, j) => {
+    if (j !== i && !other.folded && !other.allIn && other.currentBet < state.highestBet) {
+      other.acted = false;
+    }
+  });
+
   renderGame();
+  checkRoundComplete();
 }
 
 function doCheck(i) {
+  const p = state.players[i];
+  if (state.highestBet > p.currentBet) {
+    alert(`You can't check — there's a bet of £${state.highestBet.toLocaleString()} to match.`);
+    return;
+  }
+  p.acted = true;
+  p.pendingBet = 0;
   renderGame();
+  checkRoundComplete();
 }
 
 function doMatch(i) {
@@ -186,40 +289,71 @@ function doMatch(i) {
   p.currentBet += diff;
   state.pot += diff;
   p.pendingBet = 0;
+  p.acted = true;
   renderGame();
+  checkRoundComplete();
 }
 
 function doAllIn(i) {
   const p = state.players[i];
-  state.pot += p.stack;
-  p.currentBet += p.stack;
-  if (p.currentBet > state.highestBet) state.highestBet = p.currentBet;
+  const amount = p.stack;
+  state.pot += amount;
+  p.currentBet += amount;
+  if (p.currentBet > state.highestBet) {
+    state.highestBet = p.currentBet;
+    state.raiserIndex = i;
+    // Others need to act again to match
+    state.players.forEach((other, j) => {
+      if (j !== i && !other.folded && !other.allIn && other.currentBet < state.highestBet) {
+        other.acted = false;
+      }
+    });
+  }
   p.stack = 0;
   p.allIn = true;
+  p.acted = true;
   p.pendingBet = 0;
   renderGame();
+  checkRoundComplete();
 }
 
 function doFold(i) {
   state.players[i].folded = true;
+  state.players[i].acted = true;
   state.players[i].pendingBet = 0;
 
   const active = state.players.filter(p => !p.folded);
   if (active.length === 1) {
-    // Last player standing — auto award
     state.selectedWinner = state.players.indexOf(active[0]);
     confirmWinner();
     return;
   }
   renderGame();
+  checkRoundComplete();
 }
 
-// ── STAGE NAVIGATION ─────────────────────────
-function nextStage() {
-  if (state.currentStage >= 4) return;
-  state.players.forEach(p => { p.currentBet = 0; p.pendingBet = 0; });
-  state.highestBet = 0;
-  state.currentStage++;
+// Undo a player's action in the current round (before stage advances)
+function undoAction(i) {
+  const p = state.players[i];
+
+  // Refund their bet back to pending
+  if (p.currentBet > 0) {
+    p.stack += p.currentBet;
+    state.pot -= p.currentBet;
+    p.pendingBet = p.currentBet;
+    p.currentBet = 0;
+  }
+
+  p.acted = false;
+
+  // If this player was the raiser, unset that
+  if (state.raiserIndex === i) {
+    state.raiserIndex = null;
+    p.hasRaised = false;
+    // Recalculate highestBet from remaining bets
+    state.highestBet = Math.max(0, ...state.players.map(pl => pl.currentBet));
+  }
+
   renderGame();
 }
 
@@ -270,6 +404,7 @@ function nextHand() {
   state.pot = 0;
   state.currentStage = 0;
   state.highestBet = 0;
+  state.raiserIndex = null;
   state.selectedWinner = null;
 
   state.players.forEach(p => {
@@ -277,6 +412,8 @@ function nextHand() {
     p.pendingBet = 0;
     p.folded = false;
     p.allIn = false;
+    p.acted = false;
+    p.hasRaised = false;
   });
 
   // Remove busted players
