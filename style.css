@@ -1,0 +1,648 @@
+/* ═══════════════════════════════════════════
+   Lunch Break Poker — Styles
+   ═══════════════════════════════════════════ */
+
+/* ── VARIABLES ─────────────────────────────── */
+:root {
+  --felt: #1a3a2a;
+  --felt-dark: #0f2318;
+  --gold: #c9a84c;
+  --gold-light: #e8c87a;
+  --gold-dim: #7a6130;
+  --text: #f0e6c8;
+  --text-dim: #9a8a6a;
+  --border: rgba(201, 168, 76, 0.3);
+  --border-bright: rgba(201, 168, 76, 0.7);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --radius: 10px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── RESET & BASE ───────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--felt-dark);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(201, 168, 76, 0.08) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ── SETUP SCREEN ───────────────────────────── */
+#setup-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100svh;
+  padding: calc(var(--safe-top) + 1.2rem) 1rem calc(var(--safe-bot) + 1.2rem);
+  overflow-y: auto;
+}
+
+.setup-card {
+  background: linear-gradient(160deg, var(--felt) 0%, var(--felt-dark) 100%);
+  border: 1px solid var(--border-bright);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(201, 168, 76, 0.2);
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 1.6rem;
+}
+
+.logo h1 {
+  font-size: 2.2rem;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-shadow: 0 0 30px rgba(201, 168, 76, 0.4);
+  line-height: 1;
+}
+
+.logo p {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+.suit-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  opacity: 0.45;
+}
+
+.field-group {
+  margin-bottom: 1.1rem;
+}
+
+label {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+input:focus {
+  border-color: var(--gold);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.player-names {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.player-name-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  -webkit-appearance: none;
+}
+
+.player-name-input:focus {
+  border-color: var(--gold);
+}
+
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+  color: #1a1008;
+  border: none;
+  border-radius: 10px;
+  padding: 0.95rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.4rem;
+}
+
+.btn-primary:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+/* ── GAME SCREEN ────────────────────────────── */
+#game-screen {
+  display: none;
+  flex-direction: column;
+  height: 100svh;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bot);
+  overflow: hidden;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  background: linear-gradient(135deg, var(--felt) 0%, var(--felt-dark) 100%);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.game-header h1 {
+  font-size: 1.15rem;
+  color: var(--gold);
+}
+
+.round-badge {
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid var(--border-bright);
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+.btn-end-session {
+  background: transparent;
+  border: 1px solid rgba(192, 57, 43, 0.5);
+  color: #e74c3c;
+  border-radius: 7px;
+  padding: 0.35rem 0.6rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+/* ── STAGE PILLS ────────────────────────────── */
+.stage-flow {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.6rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stage-pill {
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.58rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.stage-pill.active {
+  background: rgba(201, 168, 76, 0.2);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.stage-pill.done {
+  background: rgba(201, 168, 76, 0.06);
+  border-color: var(--gold-dim);
+  color: var(--gold-dim);
+}
+
+/* ── POT ────────────────────────────────────── */
+.pot-display {
+  text-align: center;
+  background: radial-gradient(ellipse at center, rgba(201, 168, 76, 0.1) 0%, transparent 70%);
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 1rem;
+  flex-shrink: 0;
+}
+
+.pot-label {
+  font-size: 0.58rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.pot-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(201, 168, 76, 0.5);
+  line-height: 1.1;
+}
+
+.pot-amount .currency {
+  font-size: 1.2rem;
+  vertical-align: super;
+}
+
+/* ── PLAYERS SCROLL AREA ────────────────────── */
+.players-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.players-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ── PLAYER CARD ────────────────────────────── */
+.player-card {
+  background: linear-gradient(160deg, var(--felt) 0%, var(--felt-dark) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.8rem;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.player-card.folded {
+  opacity: 0.4;
+}
+
+.player-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  opacity: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* ── PLAYER LAYOUT ──────────────────────────── */
+.player-inner {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.player-info {
+  flex: 0 0 90px;
+  min-width: 0;
+}
+
+.player-name-display {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-stack {
+  font-size: 1.15rem;
+  color: var(--gold-light);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.player-stack .currency-sm {
+  font-size: 0.75rem;
+}
+
+.player-bet-info {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+
+.player-bet-info span {
+  color: var(--gold-dim);
+}
+
+/* ── PLAYER ACTIONS ─────────────────────────── */
+.player-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bet-row {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.bet-amount-display {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  text-align: center;
+  min-width: 0;
+}
+
+.btn-adj {
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid var(--border);
+  color: var(--gold);
+  border-radius: 6px;
+  padding: 0.3rem 0.35rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.btn-adj:active {
+  background: rgba(201, 168, 76, 0.25);
+}
+
+.action-row {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.action-row button {
+  flex: 1;
+  min-width: 0;
+  border-radius: 6px;
+  padding: 0.38rem 0.2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  cursor: pointer;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.action-row button:active {
+  opacity: 0.75;
+}
+
+.btn-check  { background: rgba(41, 128, 185, 0.15); border-color: rgba(52, 152, 219, 0.4);  color: #5dade2; }
+.btn-match  { background: rgba(155, 89, 182, 0.15); border-color: rgba(155, 89, 182, 0.4);  color: #bb8fce; }
+.btn-bet    { background: rgba(39, 174, 96, 0.15);  border-color: rgba(46, 204, 113, 0.4);  color: #58d68d; }
+.btn-allin  { background: rgba(230, 126, 34, 0.15); border-color: rgba(230, 126, 34, 0.4);  color: #f0a354; }
+.btn-fold   { background: rgba(192, 57, 43, 0.15);  border-color: rgba(231, 76, 60, 0.4);   color: #e74c3c; }
+
+.folded-label {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: #e74c3c;
+  text-transform: uppercase;
+  opacity: 0.7;
+  padding: 0.2rem 0;
+}
+
+/* ── BOTTOM CONTROLS ────────────────────────── */
+.round-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.7rem 0.9rem;
+  background: linear-gradient(160deg, var(--felt) 0%, var(--felt-dark) 100%);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.round-info p {
+  color: var(--text-dim);
+  font-size: 0.58rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.round-info h3 {
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+}
+
+.btn-next-round {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+  color: #1a1008;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.1rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-next-round:active {
+  opacity: 0.85;
+}
+
+/* ── MODALS ─────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: linear-gradient(160deg, var(--felt) 0%, var(--felt-dark) 100%);
+  border: 1px solid var(--border-bright);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow), 0 0 60px rgba(201, 168, 76, 0.12);
+  text-align: center;
+  max-height: 90svh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  font-size: 1.6rem;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+
+.modal p {
+  color: var(--text-dim);
+  margin-bottom: 1.2rem;
+  font-size: 0.8rem;
+}
+
+.winner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.winner-btn {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.5rem;
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.winner-btn:active,
+.winner-btn.selected {
+  background: rgba(201, 168, 76, 0.2);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-confirm {
+  flex: 1;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+  color: #1a1008;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-confirm:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+/* ── WIN CELEBRATION ────────────────────────── */
+.trophy {
+  font-size: 3.5rem;
+  margin-bottom: 0.6rem;
+  animation: bounce 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-8px); }
+}
+
+.win-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: var(--gold);
+  text-shadow: 0 0 30px rgba(201, 168, 76, 0.6);
+  margin-bottom: 0.4rem;
+}
+
+.win-amount {
+  font-size: 1.5rem;
+  color: var(--gold-light);
+  margin-bottom: 1.2rem;
+}
+
+.btn-next-hand {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+  color: #1a1008;
+  border: none;
+  border-radius: 10px;
+  padding: 0.95rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── SCROLLBAR ──────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }

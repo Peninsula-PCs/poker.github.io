@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f2318">
+  <title>Lunch Break Poker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ SETUP ═══ -->
+  <div id="setup-screen">
+    <div class="setup-card">
+      <div class="logo">
+        <h1>♠ Poker ♥</h1>
+        <div class="suit-row">♣ ♦ ♠ ♥ ♣ ♦</div>
+        <p>Texas Hold'em · Lunch Break Edition</p>
+      </div>
+
+      <div class="field-group">
+        <label>Number of Players</label>
+        <input type="number" id="num-players" min="2" max="9" value="4" inputmode="numeric">
+      </div>
+
+      <div class="field-group">
+        <label>Player Names</label>
+        <div class="player-names" id="player-names-container"></div>
+      </div>
+
+      <div class="field-group">
+        <label>Starting Stack (£)</label>
+        <input type="number" id="starting-cash" value="1000" step="100" inputmode="numeric">
+      </div>
+
+      <div class="field-group two-col">
+        <div>
+          <label>Small Blind (£)</label>
+          <input type="number" id="small-blind" value="10" step="5" inputmode="numeric">
+        </div>
+        <div>
+          <label>Big Blind (£)</label>
+          <input type="number" id="big-blind" value="20" step="5" inputmode="numeric">
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="startSession()">Deal Me In →</button>
+    </div>
+  </div>
+
+  <!-- ═══ GAME SCREEN ═══ -->
+  <div id="game-screen">
+    <div class="game-header">
+      <h1>♠ Poker</h1>
+      <div class="round-badge" id="stage-badge">Pre-Flop</div>
+      <button class="btn-end-session" onclick="confirmEndSession()">End Session</button>
+    </div>
+
+    <div class="stage-flow">
+      <div class="stage-pill" id="pill-0">Pre-Flop</div>
+      <div class="stage-pill" id="pill-1">Flop</div>
+      <div class="stage-pill" id="pill-2">Turn</div>
+      <div class="stage-pill" id="pill-3">River</div>
+      <div class="stage-pill" id="pill-4">Showdown</div>
+    </div>
+
+    <div class="pot-display">
+      <div class="pot-label">Total Pot</div>
+      <div class="pot-amount"><span class="currency">£</span><span id="pot-value">0</span></div>
+    </div>
+
+    <div class="players-scroll">
+      <div class="players-grid" id="players-grid"></div>
+    </div>
+
+    <div class="round-controls">
+      <div class="round-info">
+        <p>Current Stage</p>
+        <h3 id="round-title">Pre-Flop Betting</h3>
+      </div>
+      <button class="btn-next-round" id="next-stage-btn" onclick="nextStage()">Next Stage →</button>
+    </div>
+  </div>
+
+  <!-- ═══ WINNER MODAL ═══ -->
+  <div class="modal-overlay" id="winner-modal">
+    <div class="modal">
+      <h2>🏆 Showdown!</h2>
+      <p>Who wins the pot of <strong id="winner-pot-display">£0</strong>?</p>
+      <div class="winner-grid" id="winner-grid"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeWinnerModal()">Cancel</button>
+        <button class="btn-confirm" id="confirm-winner-btn" onclick="confirmWinner()" disabled>Award Pot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ WIN CELEBRATION ═══ -->
+  <div class="modal-overlay win-modal" id="win-modal">
+    <div class="modal">
+      <div class="trophy">🏆</div>
+      <div class="win-name" id="win-name-display"></div>
+      <div class="win-amount" id="win-amount-display"></div>
+      <button class="btn-next-hand" onclick="nextHand()">Next Hand →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
