@@ -7,8 +7,7 @@ let state = {
   players: [],
   pot: 0,
   currentStage: 0,
-  smallBlind: 10,
-  bigBlind: 20,
+  minBet: 100,
   highestBet: 0,
   selectedWinner: null,
 };
@@ -43,8 +42,7 @@ function updateNameInputs() {
 function startSession() {
   const n = parseInt(document.getElementById('num-players').value);
   const cash = parseInt(document.getElementById('starting-cash').value);
-  const sb = parseInt(document.getElementById('small-blind').value);
-  const bb = parseInt(document.getElementById('big-blind').value);
+  const minBet = parseInt(document.getElementById('min-bet').value) || 100;
   const names = [...document.querySelectorAll('.player-name-input')]
     .map((inp, i) => inp.value.trim() || `Player ${i + 1}`);
 
@@ -59,31 +57,13 @@ function startSession() {
 
   state.pot = 0;
   state.currentStage = 0;
-  state.smallBlind = sb;
-  state.bigBlind = bb;
-  state.highestBet = bb;
+  state.minBet = minBet;
+  state.highestBet = 0;
   state.selectedWinner = null;
-
-  postBlinds();
 
   document.getElementById('setup-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
   renderGame();
-}
-
-function postBlinds() {
-  // Fixed positions — no rotating dealer
-  const sbIdx = 0;
-  const bbIdx = 1;
-  const sbAmt = Math.min(state.smallBlind, state.players[sbIdx].stack);
-  const bbAmt = Math.min(state.bigBlind, state.players[bbIdx].stack);
-
-  state.players[sbIdx].stack -= sbAmt;
-  state.players[sbIdx].currentBet = sbAmt;
-  state.players[bbIdx].stack -= bbAmt;
-  state.players[bbIdx].currentBet = bbAmt;
-  state.pot += sbAmt + bbAmt;
-  state.highestBet = bbAmt;
 }
 
 // ── RENDER ───────────────────────────────────
@@ -127,6 +107,8 @@ function renderPlayers() {
     if (p.folded) {
       actionsHTML = `<div class="player-actions"><div class="folded-label">✗ Folded</div></div>`;
     } else if (!isShowdown) {
+      const mustMatchAbove = betDiff > 0;
+      const matchNeeded = mustMatchAbove ? betDiff : 0;
       actionsHTML = `
         <div class="player-actions">
           <div class="bet-row">
@@ -143,6 +125,7 @@ function renderPlayers() {
             <button class="btn-allin" onclick="doAllIn(${i})">All-In</button>
             <button class="btn-fold" onclick="doFold(${i})">Fold</button>
           </div>
+          <div class="min-bet-hint">Min bet: £${state.minBet.toLocaleString()}</div>
         </div>`;
     }
 
@@ -177,7 +160,13 @@ function doBet(i) {
     alert('Set an amount first!');
     return;
   }
+  // Must bet at least minBet above the current highest bet (or at least minBet total if no bets yet)
   const totalBet = p.currentBet + p.pendingBet;
+  const minRequired = Math.max(state.minBet, state.highestBet + state.minBet);
+  if (totalBet < minRequired && totalBet < p.stack + p.currentBet) {
+    alert(`Minimum bet is £${state.minBet.toLocaleString()}. You need to bet at least £${(minRequired - p.currentBet).toLocaleString()} more.`);
+    return;
+  }
   state.pot += p.pendingBet;
   p.stack -= p.pendingBet;
   p.currentBet = totalBet;
@@ -280,7 +269,7 @@ function nextHand() {
 
   state.pot = 0;
   state.currentStage = 0;
-  state.highestBet = state.bigBlind;
+  state.highestBet = 0;
   state.selectedWinner = null;
 
   state.players.forEach(p => {
@@ -299,7 +288,6 @@ function nextHand() {
     return;
   }
 
-  postBlinds();
   renderGame();
 }
 
