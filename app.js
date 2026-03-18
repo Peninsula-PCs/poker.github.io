@@ -1,8 +1,4 @@
-/* ═══════════════════════════════════════════
-   Lunch Break Poker — App Logic
-   ═══════════════════════════════════════════ */
 
-// ── STATE ────────────────────────────────────
 let state = {
   players: [],
   pot: 0,
@@ -290,6 +286,7 @@ function doMatch(i) {
   state.pot += diff;
   p.pendingBet = 0;
   p.acted = true;
+  p.hasRaised = true;
   renderGame();
   checkRoundComplete();
 }
